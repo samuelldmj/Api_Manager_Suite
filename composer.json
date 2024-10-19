@@ -1,0 +1,18 @@
+{
+    "name": "dell/api-complete",
+    "description": "simple RestFul api",
+    "autoload": {
+        "psr-4": {
+            "Dell\\ApiComplete\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "samuelldmj",
+            "email": "samuelldmj5@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.10"
+    }
+}
