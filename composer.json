@@ -3,7 +3,7 @@
     "description": "simple RestFul api",
     "autoload": {
         "psr-4": {
-            "Dell\\ApiComplete\\": "src/"
+            "Src\\": "src/"
         }
     },
     "authors": [
