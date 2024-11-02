@@ -1,5 +1,8 @@
 <?php 
 namespace Src\Endpoints;
+
+use Src\Exceptions\InvalidValidationException;
+use Respect\Validation\Validator as v;
 class User 
 {
     public int $userId;
@@ -8,8 +11,22 @@ class User
         
     }
 
-    public function create():self{
-        return $this;
+    public function create(mixed $data):object{
+        $minimumNameLength = 2;
+        $maxmumNameLength = 60;
+
+      $schemaValidator =  v::attribute('first', v::stringType()
+      ->length($minimumNameLength, $maxmumNameLength))
+      ->attribute('last', v::stringType()
+      ->length($minimumNameLength, $maxmumNameLength))
+      ->attribute('email', v::email(), mandatory:false)
+      ->attribute('phoneNumber', v::phone(), mandatory: false);
+
+      if($schemaValidator->validate($data)){
+        return $data;
+      }
+
+      throw new InvalidValidationException();
     }
     public function retrieveAll():array{
         return [];
@@ -24,7 +41,7 @@ class User
         return true;
     }
 
-    public function update():self{
+    public function update(mixed $data):self{
         return $this;
     }
 }
