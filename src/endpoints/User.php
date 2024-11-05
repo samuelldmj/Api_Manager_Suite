@@ -5,9 +5,9 @@ use Src\Exceptions\InvalidValidationException;
 use Respect\Validation\Validator as v;
 class User 
 {
-    public int $userId;
+    public  $userId;
     public function __construct(public string $name, public string $email, public string $phoneNumber)
-    {
+    { 
         
     }
 
@@ -32,12 +32,12 @@ class User
         return [];
     }
 
-    public function retrieve(int $userId): self{
+    public function retrieve(string $userId): self{
         $this->userId = $userId;
         return $this;
     }
 
-    public function remove():bool{
+    public function remove(string $userId):bool{
         return true;
     }
 

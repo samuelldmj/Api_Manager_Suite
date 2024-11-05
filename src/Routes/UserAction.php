@@ -2,6 +2,8 @@
 namespace Src\Routes;
 
 use Exception;
+use PH7\JustHttp\StatusCode;
+use PH7\PhpHttpResponseHeader\Http;
 use Src\Endpoints\User;
 use Src\Exceptions\InvalidValidationException;
 // require_once dirname(__DIR__) . '/endpoints/User.php';
@@ -33,11 +35,12 @@ enum  UserAction: string
               self::RETRIEVE_ALL => $user->retrieveAll(),
               self::RETRIEVE =>$user->retrieve($user->userId),
               self::UPDATE =>$user->update($payload),
-              self::REMOVE =>$user->remove(),     
+              self::REMOVE =>$user->remove($user->userId),     
               default =>$user->retrieve($user->userId)
             };
 
         } catch (InvalidValidationException | Exception $e) {
+            Http::setHeadersByCode(StatusCode::BAD_REQUEST);
            $response = [
                 'errors' => [
                     'message' => $e->getMessage(),
