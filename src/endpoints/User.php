@@ -1,47 +1,61 @@
 <?php 
 namespace Src\Endpoints;
 
+use Src\Validation\UserValidation;
 use Src\Exceptions\InvalidValidationException;
 use Respect\Validation\Validator as v;
 class User 
 {
-    public  $userId;
-    public function __construct(public string $name, public string $email, public string $phoneNumber)
+    public  ?string $userId;
+    public function __construct(
+        public string $name, 
+        public string $email, 
+        public string $phoneNumber)
     { 
-        
+
     }
 
     public function create(mixed $data):object{
-        $minimumNameLength = 2;
-        $maxmumNameLength = 60;
 
-      $schemaValidator =  v::attribute('first', v::stringType()
-      ->length($minimumNameLength, $maxmumNameLength))
-      ->attribute('last', v::stringType()
-      ->length($minimumNameLength, $maxmumNameLength))
-      ->attribute('email', v::email(), mandatory:false)
-      ->attribute('phoneNumber', v::phone(), mandatory: false);
+        $userValidation = new  UserValidation($data);
 
-      if($schemaValidator->validate($data)){
+        //validating schema
+      if($userValidation->isCreationSchemaValid())
+      {
         return $data;
       }
 
-      throw new InvalidValidationException();
+      throw new InvalidValidationException('invalid payload');
     }
     public function retrieveAll():array{
         return [];
     }
 
-    public function retrieve(string $userId): self{
+    public function retrieve(string $userId): self
+    {
+        if (v::uuid(version:4)->validate($userId)) {
+            $this->userId = $userId;
+            return $this;
+        }
+        throw new InvalidValidationException('invalid UUID');
+    }
+
+    public function remove(string $userId):self{
+      if (v::uuid(version:4)->validate($userId)) {
         $this->userId = $userId;
         return $this;
     }
-
-    public function remove(string $userId):bool{
-        return true;
+    throw new InvalidValidationException('invalid UUID');
     }
 
-    public function update(mixed $data):self{
-        return $this;
+    public function update(mixed $data):object{
+        $userValidation = new  UserValidation($data);
+
+        //validating schema
+      if($userValidation->isCreationSchemaValid())
+      {
+        return $data;
+      }
+      throw new InvalidValidationException();
     }
 }
