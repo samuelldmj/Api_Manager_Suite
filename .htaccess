@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        # Disable Directory Browsing
+        Options -MultiViews -Indexes
+    </IfModule>
+    Options +FollowSymLinks
+    RewriteEngine On
+    RewriteRule ^([^/]+)/?([^/]+)?/?([^/]+)?/?$ index.php?resources=$1&action=$2&user_id=$3 [QSA,L]
+</IfModule>
