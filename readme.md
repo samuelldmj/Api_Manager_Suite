@@ -6,3 +6,4 @@
 ## ramsey uuid for secure uuid
 ## red bean 
 ## vlucas for dontenv environment
+## whoops for better exception formatting in Json style.
