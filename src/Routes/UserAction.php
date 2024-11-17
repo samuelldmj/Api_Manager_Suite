@@ -2,7 +2,7 @@
 namespace Src\Routes;
 
 
-use Exception;
+
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Src\Endpoints\User;
@@ -27,7 +27,7 @@ enum UserAction: string
         $user = new User('Sam', 'sam@hotmail.com', '0808437284');
         
         // Set userId from query parameter if available
-        $user->userId = $_GET['user_id'] ?? null;
+        $user->userId = $_REQUEST['id'] ?? null;
 
         try {
             // Match the action and call the corresponding method
@@ -41,7 +41,7 @@ enum UserAction: string
                 self::REMOVE => $user->remove($user->userId),
                 default => $user->retrieve($user->userId)
             };
-        } catch (InvalidValidationException | Exception $e) {
+        } catch (InvalidValidationException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
             Http::setHeadersByCode(StatusCode::BAD_REQUEST);
             $response = [
@@ -57,7 +57,7 @@ enum UserAction: string
 }
 
 // Determine the action based on query parameters and execute getResponse()
-$action = $_GET['action'] ?? null;
+$action = $_REQUEST['action'] ?? null;
 
 $userAction = match ($action) {
     'create' => UserAction::CREATE,
