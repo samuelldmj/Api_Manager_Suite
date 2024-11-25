@@ -43,7 +43,7 @@ class User
       throw new InvalidValidationException('invalid Data');
     }
     public function retrieveAll():array{
-      $allUsers  = UserDal::getUsers();
+      $allUsers  = UserDal::getAllUsers();
       // foreach($allUsers as $k){
       //   unset($k['id']);
       // }
@@ -66,13 +66,28 @@ class User
         throw new InvalidValidationException('invalid UUID');
     }
 
-    public function remove(string $userId):bool{
-      if (v::uuid(version:4)->validate($userId)) {
-        // $this->userId = $userId;
-        return true;
-    }
-    throw new InvalidValidationException('invalid UUID');
-    }
+
+    //deleting the user from the db using url: delete method
+//     public function remove(string $userId): bool
+// {
+//     if (!v::uuid(version: 4)->validate($userId)) {
+//         throw new InvalidValidationException('Invalid UUID');
+//     }
+
+//     return UserDal::deleteUser($userId);
+// }
+
+
+// //deleting the user from the db using url: post method on the body of the page
+public function remove(object $data){
+  $userValidation = new  UserValidation($data);
+  if($userValidation->isDeleteUser()){
+    return UserDal::deleteUser($data->userId);
+  }
+}
+
+
+
 
     public function update(mixed $data):object{
         $userValidation = new  UserValidation($data);

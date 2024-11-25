@@ -5,15 +5,16 @@ namespace Src\Dal;
 use RedBeanPHP\Facade as R;
 use Src\Entity\User as UserEntity;
 
-final class UserDal 
+final class UserDal
 {
 
-    public const TABLE_NAME = 'users' ;
+    public const TABLE_NAME = 'users';
 
     /**
      * @throws \RedBeanPHP\RedException\SQL
      */
-    public static function create(UserEntity $userEntity): int|string{
+    public static function create(UserEntity $userEntity): int|string
+    {
         $userBean = R::dispense(self::TABLE_NAME);
 
         $userBean->user_uuid = $userEntity->getUserUuid();
@@ -31,16 +32,26 @@ final class UserDal
 
     }
 
-    public static function getUserById(string $userUuid): ?array{
+    public static function getUserById(string $userUuid): ?array
+    {
 
         //from the table, find the first occurence and then bind the user_uuid column with the searched uuid
         $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
         return $userBean?->export();
-        
+
     }
 
-    public static function getUsers(){
+    public static function getAllUsers()
+    {
         $userBean = R::findAll(self::TABLE_NAME);
         return $userBean;
     }
+
+    public static function deleteUser(string $userUuid): bool
+    {
+        $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
+
+        return $userBean !== null && (bool) R::trash($userBean);
+    }
+
 }

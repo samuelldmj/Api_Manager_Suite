@@ -29,5 +29,9 @@ class UserValidation
         return $this->isCreationSchemaValid();
     }
 
+    public function isDeleteUser(){
+         return v::attribute('userId', v::uuid())->validate($this->data);   
+    }
+
    
 }

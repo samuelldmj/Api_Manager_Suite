@@ -23,10 +23,10 @@ enum UserActionRoute: string
         $data = file_get_contents("php://input");
         $payload = json_decode($data);
 
-        // Initialize a User instance with default data
+        // Initialize a User instance fom the business logic.
         $user = new User();
         
-        // Set userId from query parameter if available
+        // Set userId from the query parameter in the url if available
         $userId = $_REQUEST['id'] ?? null;
 
         try {
@@ -38,7 +38,10 @@ enum UserActionRoute: string
                 self::RETRIEVE_ALL => $user->retrieveAll(),
                 self::RETRIEVE => $user->retrieve($userId),
                 self::UPDATE => $user->update($payload),
-                self::REMOVE => $user->remove($userId)
+               // self::REMOVE => $user->remove($userId),
+
+               //logic for post method
+                self::REMOVE => $user->remove($payload)
             };
         } catch (InvalidValidationException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
