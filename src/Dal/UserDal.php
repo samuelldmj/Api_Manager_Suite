@@ -30,4 +30,12 @@ final class UserDal
         return $id;
 
     }
+
+    public static function getUserId(string $userUuid): ?array{
+
+        //from the table, find the first occurence and then bind the user_uuid column with the searched uuid
+        $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
+        return $userBean?->export();
+        
+    }
 }

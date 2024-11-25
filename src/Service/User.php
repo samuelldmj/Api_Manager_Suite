@@ -46,11 +46,14 @@ class User
         return [];
     }
 
-    public function retrieve(string $userId): self
+    public function retrieve(string $userId): array
     {
         if (v::uuid(version:4)->validate($userId)) {
-            // $this->userId = $userId;
-            return $this;
+            $userData = UserDal::getUserId($userId);
+            //removing user id and uuid from the display field.
+            unset($userData['id']);
+            unset($userData['user_uuid']);
+            return $userData;
         }
         throw new InvalidValidationException('invalid UUID');
     }

@@ -7,7 +7,7 @@ $resource = $_REQUEST['resource'] ?? null;
 
 switch ($resource){
     case 'user':
-        return require_once 'UserAction.php';
+        return require_once 'UserActionRoute.php';
 
     default:
     Http::setHeadersByCode(StatusCode::NOT_FOUND);

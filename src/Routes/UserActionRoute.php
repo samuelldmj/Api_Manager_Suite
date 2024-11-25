@@ -8,7 +8,7 @@ use PH7\PhpHttpResponseHeader\Http;
 use Src\Service\User;
 use Src\Exceptions\InvalidValidationException;
 
-enum UserAction: string
+enum UserActionRoute: string
 {
     case CREATE = 'create';
     case RETRIEVE = 'retrieve';
@@ -31,8 +31,8 @@ enum UserAction: string
 
         try {
             // Match the action and call the corresponding method
-            //self points to the enums UserAction then get map to the appropriate method in the User class.
-            //for example if the  action = retrieve; $this will be UserAction::RETRIEVE
+            //self points to the enums UserActionRoute then get map to the appropriate method in the User class.
+            //for example if the  action = retrieve; $this will be UserActionRoute::RETRIEVE
             $response = match ($this) {
                 self::CREATE => $user->create($payload),
                 self::RETRIEVE_ALL => $user->retrieveAll(),
@@ -59,15 +59,15 @@ enum UserAction: string
 // Determine the action based on query parameters then execute the getResponse()
 $action = $_REQUEST['action'] ?? null;
 
-$userAction = match ($action) {
-    'create' => UserAction::CREATE,
-    'retrieve' => UserAction::RETRIEVE,
-    'remove' => UserAction::REMOVE,
-    'update' => UserAction::UPDATE,
-    default => UserAction::RETRIEVE_ALL,
+$userActionRoute = match ($action) {
+    'create' => UserActionRoute::CREATE,
+    'retrieve' => UserActionRoute::RETRIEVE,
+    'remove' => UserActionRoute::REMOVE,
+    'update' => UserActionRoute::UPDATE,
+    default => UserActionRoute::RETRIEVE_ALL,
 };
 
-echo $userAction->getResponse();
+echo $userActionRoute->getResponse();
 
 
 
