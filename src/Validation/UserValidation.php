@@ -1,6 +1,7 @@
 <?php
 namespace Src\Validation;
 use Respect\Validation\Validator as v;
+
 class UserValidation 
 {
 

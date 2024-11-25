@@ -5,7 +5,7 @@ namespace Src\Routes;
 
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
-use Src\Endpoints\User;
+use Src\Service\User;
 use Src\Exceptions\InvalidValidationException;
 
 enum UserAction: string
@@ -24,10 +24,10 @@ enum UserAction: string
         $payload = json_decode($data);
 
         // Initialize a User instance with default data
-        $user = new User('Sam', 'sam@hotmail.com', '0808437284');
+        $user = new User();
         
         // Set userId from query parameter if available
-        $user->userId = $_REQUEST['id'] ?? null;
+        $userId = $_REQUEST['id'] ?? null;
 
         try {
             // Match the action and call the corresponding method
@@ -36,10 +36,10 @@ enum UserAction: string
             $response = match ($this) {
                 self::CREATE => $user->create($payload),
                 self::RETRIEVE_ALL => $user->retrieveAll(),
-                self::RETRIEVE => $user->retrieve($user->userId),
+                self::RETRIEVE => $user->retrieve($userId),
                 self::UPDATE => $user->update($payload),
-                self::REMOVE => $user->remove($user->userId),
-                default => $user->retrieve($user->userId)
+                self::REMOVE => $user->remove($userId),
+                default => $user->retrieve($userId)
             };
         } catch (InvalidValidationException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
@@ -56,7 +56,7 @@ enum UserAction: string
     }
 }
 
-// Determine the action based on query parameters and execute getResponse()
+// Determine the action based on query parameters then execute the getResponse()
 $action = $_REQUEST['action'] ?? null;
 
 $userAction = match ($action) {

@@ -25,6 +25,8 @@ final class UserDal
 
         $id = R::store($userBean);
 
+        R::close();
+
         return $id;
 
     }
