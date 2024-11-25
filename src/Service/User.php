@@ -43,16 +43,24 @@ class User
       throw new InvalidValidationException('invalid Data');
     }
     public function retrieveAll():array{
-        return [];
+      $allUsers  = UserDal::getUsers();
+      // foreach($allUsers as $k){
+      //   unset($k['id']);
+      // }
+
+      $hidingUserId = array_map(function(object $k){
+        unset($k['id']);
+        return $k;
+      }, $allUsers);
+        return $hidingUserId;
     }
 
     public function retrieve(string $userId): array
     {
         if (v::uuid(version:4)->validate($userId)) {
-            $userData = UserDal::getUserId($userId);
+            $userData = UserDal::getUserById($userId);
             //removing user id and uuid from the display field.
             unset($userData['id']);
-            unset($userData['user_uuid']);
             return $userData;
         }
         throw new InvalidValidationException('invalid UUID');

@@ -38,8 +38,7 @@ enum UserActionRoute: string
                 self::RETRIEVE_ALL => $user->retrieveAll(),
                 self::RETRIEVE => $user->retrieve($userId),
                 self::UPDATE => $user->update($payload),
-                self::REMOVE => $user->remove($userId),
-                default => $user->retrieve($userId)
+                self::REMOVE => $user->remove($userId)
             };
         } catch (InvalidValidationException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
@@ -62,6 +61,7 @@ $action = $_REQUEST['action'] ?? null;
 $userActionRoute = match ($action) {
     'create' => UserActionRoute::CREATE,
     'retrieve' => UserActionRoute::RETRIEVE,
+    'retrieveAll' => UserActionRoute::RETRIEVE_ALL,
     'remove' => UserActionRoute::REMOVE,
     'update' => UserActionRoute::UPDATE,
     default => UserActionRoute::RETRIEVE_ALL,
