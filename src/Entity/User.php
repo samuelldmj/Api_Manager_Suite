@@ -1,5 +1,5 @@
 <?php
-//Skeleteal form of the methods that would used to input data into our table.
+//Skeleteal form of the methods that would used to input and retrieve data from my table.
 namespace Src\Entity;
 
 

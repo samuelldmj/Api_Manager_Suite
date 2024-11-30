@@ -10,9 +10,5 @@ switch ($resource){
         return require_once 'UserActionRoute.php';
 
     default:
-    Http::setHeadersByCode(StatusCode::NOT_FOUND);
-    echo $response = json_encode([
-        'error' => 'request not found'
-    ]
-    );   
+    require_once "route-not-found.php" ;
 }

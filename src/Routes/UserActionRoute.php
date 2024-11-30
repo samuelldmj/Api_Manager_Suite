@@ -61,16 +61,13 @@ enum UserActionRoute: string
 // Determine the action based on query parameters then execute the getResponse()
 $action = $_REQUEST['action'] ?? null;
 
-$userActionRoute = match ($action) {
-    'create' => UserActionRoute::CREATE,
-    'retrieve' => UserActionRoute::RETRIEVE,
-    'retrieveAll' => UserActionRoute::RETRIEVE_ALL,
-    'remove' => UserActionRoute::REMOVE,
-    'update' => UserActionRoute::UPDATE,
-    default => UserActionRoute::RETRIEVE_ALL,
-};
+$userActionRoute = userActionRoute::tryFrom($action);
+if ($userActionRoute){
+    echo $userActionRoute->getResponse();
+}  else {
+    require_once "route-not-found.php";
+}
 
-echo $userActionRoute->getResponse();
 
 
 
