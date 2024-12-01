@@ -3,6 +3,7 @@
 namespace Src\Dal;
 
 use RedBeanPHP\Facade as R;
+use RedBeanPHP\RedException\SQL;
 use Src\Entity\User as UserEntity;
 
 final class UserDal
@@ -24,12 +25,13 @@ final class UserDal
         $userBean->phone = $userEntity->getPhoneNumber();
         $userBean->create_date = $userEntity->getCreatedDate();
 
-        $id = R::store($userBean);
-
-        R::close();
-
-        return $id;
-
+        try {
+            return R::store($userBean);
+        } catch(SQL $e){
+            return false;
+        } finally {
+            R::close();
+        }
     }
 
     public static function getUserById(string $userUuid): ?array
@@ -52,6 +54,44 @@ final class UserDal
         $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
 
         return $userBean !== null && (bool) R::trash($userBean);
+    }
+
+
+    public static function update(string $userUuid, UserEntity $userEntity)
+    {
+        $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
+        
+        if($userBean){
+           $firstName = $userEntity->getFirstName();
+           $lastName = $userEntity->getLastName();
+           $email = $userEntity->getEmail();
+           $phone = $userEntity->getPhoneNumber();
+
+
+           if($firstName){
+            $userBean->first_name = $firstName;
+           }
+
+           if($lastName){
+            $userBean->last_name = $lastName;
+           }
+
+           if($email){
+            $userBean->email = $email;
+           }
+
+           if($phone){
+            $userBean->phone = $phone;
+           }
+        }
+
+        try {
+            return R::store($userBean);
+        } catch(SQL $e){
+            return false;
+        } finally {
+            R::close();
+        }
     }
 
 }

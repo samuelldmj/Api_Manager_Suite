@@ -1,4 +1,5 @@
 <?php 
+//Business logic 
 namespace Src\Service;
 
 use PH7\JustHttp\StatusCode;
@@ -12,9 +13,9 @@ use Src\Dal\UserDal;
 use Src\Entity\User as UserEntity;
 class User 
 {
-    public function create(mixed $data):object{
+    public function create(mixed $payload):object|array{
 
-        $userValidation = new  UserValidation($data);
+        $userValidation = new  UserValidation($payload);
 
         //validating schema
       if($userValidation->isCreationSchemaValid())
@@ -24,24 +25,27 @@ class User
 
         $userEntity = new UserEntity;
         $userEntity->setUserUuid($userId)
-        ->setFirstName($data->first)
-        ->setLastName($data->last)
-        ->setEmail($data->email)
-        ->setPhoneNumber($data->phoneNumber)
+        ->setFirstName($payload->first)
+        ->setLastName($payload->last)
+        ->setEmail($payload->email)
+        ->setPhoneNumber($payload->phoneNumber)
         ->setCreatedDate(date('Y-m-d H:i:s'));
 
-        try {
           //from DAL file.
-            UserDal::create(userEntity: $userEntity);
-        } catch (\RedBeanPHP\RedException\SQL $exception) {
-          Http::getStatusCode(StatusCode::INTERNAL_SERVER_ERROR);
-          $data = [];
-        }
-        return $data;
+            if(UserDal::create(userEntity: $userEntity) === false){
+              //when an entry into the database fails
+              Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+              $payload = [];
+            }
+
+            Http::getStatusCode(StatusCode::CREATED);
+            return $payload;
+        } 
+        throw new InvalidValidationException();
       }
 
-      throw new InvalidValidationException('invalid Data');
-    }
+     
+    
     public function retrieveAll():array{
       $allUsers  = UserDal::getAllUsers();
       // foreach($allUsers as $k){
@@ -55,10 +59,10 @@ class User
         return $hidingUserId;
     }
 
-    public function retrieve(string $userId): array
+    public function retrieve(string $userUuid): array
     {
-        if (v::uuid(version:4)->validate($userId)) {
-            $userData = UserDal::getUserById($userId);
+        if (v::uuid(version:4)->validate($userUuid)) {
+            $userData = UserDal::getUserById($userUuid);
             //removing user id and uuid from the display field.
             unset($userData['id']);
             return $userData;
@@ -78,25 +82,51 @@ class User
 // }
 
 
-// //deleting the user from the db using url: post method on the body of the page
-public function remove(object $data){
-  $userValidation = new  UserValidation($data);
+// ALTERNATIVELY //deleting the user from the db using url: post method on the body of the page
+//incorrect payload will give a null response.
+public function remove(mixed $payload){
+  $userValidation = new  UserValidation($payload);
   if($userValidation->isDeleteUser()){
-    return UserDal::deleteUser($data->userId);
+     return UserDal::deleteUser($payload->userUuid);
   }
 }
 
-
-
-
-    public function update(mixed $data):object{
-        $userValidation = new  UserValidation($data);
-
-        //validating schema
-      if($userValidation->isCreationSchemaValid())
-      {
-        return $data;
-      }
+public function update(mixed $payload): object|array {
+  $userValidation = new UserValidation($payload);
+  
+  // Validating schema
+  if (!$userValidation->isCreationSchemaValid()) {
       throw new InvalidValidationException();
-    }
+  }
+
+  $userUuid = $payload->userUuid;
+  $userEntity = new UserEntity();
+
+  // Setting my user entity properties
+  if (!empty($payload->first)) {
+      $userEntity->setFirstName($payload->first);
+  }
+
+  if (!empty($payload->last)) {
+      $userEntity->setLastName($payload->last);
+  }
+
+  if (!empty($payload->email)) {
+      $userEntity->setEmail($payload->email);
+  }
+
+  if (!empty($payload->phoneNumber)) {
+      $userEntity->setPhoneNumber($payload->phoneNumber);
+  }
+
+  // Update in the database
+  if (UserDal::update($userUuid, $userEntity) === false) {
+      Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+      return [];
+  }
+
+  Http::setHeadersByCode(StatusCode::OK); // Correct response header
+  return $payload; // Return updated payload
+}
+
 }

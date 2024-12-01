@@ -26,8 +26,8 @@ enum UserActionRoute: string
         // Initialize a User instance fom the business logic.
         $user = new User();
         
-        // Set userId from the query parameter in the url if available
-        $userId = $_REQUEST['id'] ?? null;
+        // Set userUuid from the query parameter in the url if available
+        $userUuid = $_REQUEST['id'] ?? null;
 
         try {
             // Match the action and call the corresponding method
@@ -36,7 +36,7 @@ enum UserActionRoute: string
             $response = match ($this) {
                 self::CREATE => $user->create($payload),
                 self::RETRIEVE_ALL => $user->retrieveAll(),
-                self::RETRIEVE => $user->retrieve($userId),
+                self::RETRIEVE => $user->retrieve($userUuid),
                 self::UPDATE => $user->update($payload),
                // self::REMOVE => $user->remove($userId),
 

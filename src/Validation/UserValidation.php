@@ -30,7 +30,7 @@ class UserValidation
     }
 
     public function isDeleteUser(){
-         return v::attribute('userId', v::uuid())->validate($this->data);   
+         return v::attribute('userUuid', v::uuid())->validate($this->data);   
     }
 
    
