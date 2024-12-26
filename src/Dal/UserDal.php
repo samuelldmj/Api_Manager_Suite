@@ -34,7 +34,7 @@ final class UserDal
         }
     }
 
-    public static function getUserById(string $userUuid): ?array
+    public static function get(string $userUuid): ?array
     {
 
         //from the table, find the first occurence and then bind the user_uuid column with the searched uuid
@@ -43,13 +43,13 @@ final class UserDal
 
     }
 
-    public static function getAllUsers()
+    public static function getAllRec()
     {
         $userBean = R::findAll(self::TABLE_NAME);
         return $userBean;
     }
 
-    public static function deleteUser(string $userUuid): bool
+    public static function deleteRec(string $userUuid): bool
     {
         $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
 

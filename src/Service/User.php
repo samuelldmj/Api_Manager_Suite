@@ -21,7 +21,7 @@ class User
       if($userValidation->isCreationSchemaValid())
       {
         //assigns uuid to user when a data input is created.
-        $userId = Uuid::uuid4();
+        $userId = Uuid::uuid4()->toString();
 
         $userEntity = new UserEntity;
         $userEntity->setUserUuid($userId)
@@ -47,22 +47,22 @@ class User
      
     
     public function retrieveAll():array{
-      $allUsers  = UserDal::getAllUsers();
-      // foreach($allUsers as $k){
+      $allRec  = UserDal::getAllRec();
+      // foreach($allRec as $k){
       //   unset($k['id']);
       // }
 
       $hidingUserId = array_map(function(object $k){
         unset($k['id']);
         return $k;
-      }, $allUsers);
+      }, $allRec);
         return $hidingUserId;
     }
 
     public function retrieve(string $userUuid): array
     {
         if (v::uuid(version:4)->validate($userUuid)) {
-            $userData = UserDal::getUserById($userUuid);
+            $userData = UserDal::get($userUuid);
             //removing user id and uuid from the display field.
             unset($userData['id']);
             return $userData;
@@ -87,7 +87,7 @@ class User
 public function remove(mixed $payload){
   $userValidation = new  UserValidation($payload);
   if($userValidation->isDeleteUser()){
-     return UserDal::deleteUser($payload->userUuid);
+     return UserDal::deleteRec($payload->userUuid);
   }
 }
 

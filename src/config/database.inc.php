@@ -13,7 +13,9 @@ $currentEnvironment = Environment::tryFrom($_ENV['ENVIRONMENT']);
 
 //if this is on production, our database structure will be on frozen state.
 //added null safe to handle null value. tryform() method will return null if the environment is not correctly specified.
-if($currentEnvironment?->environmentName() === Environment::PRODUCTION->value){                           
-    echo "RedBean Frozen";
-    R::freeze(true);
+if ($currentEnvironment?->environmentName() === Environment::PRODUCTION->value) {
+    R::freeze(true); // Freeze in production only
+} else {
+    R::freeze(false); // Allow table creation in development
 }
+
