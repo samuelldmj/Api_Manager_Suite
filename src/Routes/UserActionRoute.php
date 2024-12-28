@@ -1,12 +1,11 @@
 <?php
 namespace Src\Routes;
 
-
-
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Src\Service\User;
 use Src\Exceptions\InvalidValidationException;
+use Src\Exceptions\NotFoundException;
 
 enum UserActionRoute: string
 {
@@ -30,6 +29,20 @@ enum UserActionRoute: string
         $userUuid = $_REQUEST['id'] ?? null;
 
         try {
+            $expectedHttpMethod = match($this){
+                self::CREATE => CustomHttp::POST_METHOD,
+                self::RETRIEVE_ALL => CustomHttp::GET_METHOD,
+                self::RETRIEVE => CustomHttp::GET_METHOD,
+                self::REMOVE => CustomHttp::DELETE_METHOD,
+                self::UPDATE => CustomHttp::PUT_METHOD
+            };
+
+
+            if(!CustomHttp::httpMethodValidator($expectedHttpMethod)){
+                throw new NotFoundException('Http Method is incorrect. Request Not found');
+              }
+ 
+            
             // Match the action and call the corresponding method
             //self points to the enums UserActionRoute then get map to the appropriate method in the User class.
             //for example if the  action = retrieve; $this will be UserActionRoute::RETRIEVE

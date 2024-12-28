@@ -11,9 +11,13 @@ use Src\Exceptions\InvalidValidationException;
 use Respect\Validation\Validator as v;
 use Src\Dal\UserDal;
 use Src\Entity\User as UserEntity;
+
+
 class User 
 {
     public function create(mixed $payload):object|array{
+
+     
 
         $userValidation = new  UserValidation($payload);
 
@@ -47,6 +51,9 @@ class User
      
     
     public function retrieveAll():array{
+
+     
+
       $allRec  = UserDal::getAllRec();
       // foreach($allRec as $k){
       //   unset($k['id']);
@@ -61,6 +68,8 @@ class User
 
     public function retrieve(string $userUuid): array
     {
+      
+
         if (v::uuid(version:4)->validate($userUuid)) {
             $userData = UserDal::get($userUuid);
             //removing user id and uuid from the display field.
@@ -85,6 +94,10 @@ class User
 // ALTERNATIVELY //deleting the user from the db using url: post method on the body of the page
 //incorrect payload will give a null response.
 public function remove(mixed $payload){
+
+
+
+
   $userValidation = new  UserValidation($payload);
   if($userValidation->isDeleteUser()){
      return UserDal::deleteRec($payload->userUuid);
@@ -92,6 +105,7 @@ public function remove(mixed $payload){
 }
 
 public function update(mixed $payload): object|array {
+ 
   $userValidation = new UserValidation($payload);
   
   // Validating schema
