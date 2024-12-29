@@ -2,6 +2,7 @@
 //Business logic 
 namespace Src\Service;
 
+
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Ramsey\Uuid\Uuid;
@@ -11,13 +12,11 @@ use Src\Exceptions\InvalidValidationException;
 use Respect\Validation\Validator as v;
 use Src\Dal\UserDal;
 use Src\Entity\User as UserEntity;
-
+use Src\Exceptions\EmailExistException;
 
 class User 
 {
     public function create(mixed $payload):object|array{
-
-     
 
         $userValidation = new  UserValidation($payload);
 
@@ -32,8 +31,13 @@ class User
         ->setFirstName($payload->first)
         ->setLastName($payload->last)
         ->setEmail($payload->email)
-        ->setPhoneNumber($payload->phoneNumber)
+        ->setPassword(password_hash($payload->password, PASSWORD_ARGON2I))
+        ->setPhoneNumber(phone: $payload->phoneNumber)
         ->setCreatedDate(date('Y-m-d H:i:s'));
+
+        if(UserDal::doesEmailExist($userEntity->getEmail())){
+            throw new EmailExistException();
+        }
 
           //from DAL file.
             if(UserDal::create(userEntity: $userEntity) === false){
@@ -51,8 +55,6 @@ class User
      
     
     public function retrieveAll():array{
-
-     
 
       $allRec  = UserDal::getAllRec();
       // foreach($allRec as $k){
@@ -94,9 +96,6 @@ class User
 // ALTERNATIVELY //deleting the user from the db using url: post method on the body of the page
 //incorrect payload will give a null response.
 public function remove(mixed $payload){
-
-
-
 
   $userValidation = new  UserValidation($payload);
   if($userValidation->isDeleteUser()){

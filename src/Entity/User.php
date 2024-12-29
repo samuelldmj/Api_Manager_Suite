@@ -6,9 +6,9 @@ namespace Src\Entity;
 class User {
 
     private string $userUuid;
-    private string $firstName;
-    private string $lastName;
-    private string $email;
+    private ?string $firstName = null;
+    private ?string $lastName = null;
+    private ?string $email = null;
 
     private string $phoneNumber;
 

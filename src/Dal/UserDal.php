@@ -22,6 +22,7 @@ final class UserDal
         $userBean->first_name = $userEntity->getFirstName();
         $userBean->last_name = $userEntity->getLastName();
         $userBean->email = $userEntity->getEmail();
+        $userBean->password = $userEntity->getPassword();
         $userBean->phone = $userEntity->getPhoneNumber();
         $userBean->create_date = $userEntity->getCreatedDate();
 
@@ -92,6 +93,11 @@ final class UserDal
         } finally {
             R::close();
         }
+    }
+
+    public static function doesEmailExist($email){
+
+        return R::findOne(self::TABLE_NAME, 'email = ?', [$email] ) !== null;
     }
 
 }

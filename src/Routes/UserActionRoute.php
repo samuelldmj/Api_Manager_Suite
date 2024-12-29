@@ -1,8 +1,10 @@
 <?php
 namespace Src\Routes;
 
+
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
+use Src\Exceptions\EmailExistException;
 use Src\Service\User;
 use Src\Exceptions\InvalidValidationException;
 use Src\Exceptions\NotFoundException;
@@ -56,7 +58,7 @@ enum UserActionRoute: string
                //logic for post method
                 self::REMOVE => $user->remove($payload)
             };
-        } catch (InvalidValidationException $e) {
+        } catch (InvalidValidationException | EmailExistException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
             Http::setHeadersByCode(StatusCode::BAD_REQUEST);
             $response = [
