@@ -1,9 +1,10 @@
 <?php
 namespace Src\Exceptions;
 
-use Exception;
+use RuntimeException;
 
-class NotFoundException extends Exception {
+class NotFoundException extends RuntimeException
+{
 
     // protected $message = 'Http Method is incorrect.';
 

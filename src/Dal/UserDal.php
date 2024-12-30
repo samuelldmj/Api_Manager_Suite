@@ -35,7 +35,7 @@ final class UserDal
         }
     }
 
-    public static function get(string $userUuid): ?array
+    public static function getById(string $userUuid): ?array
     {
 
         //from the table, find the first occurence and then bind the user_uuid column with the searched uuid
@@ -43,6 +43,7 @@ final class UserDal
         return $userBean?->export();
 
     }
+
 
     public static function getAllRec()
     {
@@ -98,6 +99,11 @@ final class UserDal
     public static function doesEmailExist($email){
 
         return R::findOne(self::TABLE_NAME, 'email = ?', [$email] ) !== null;
+    }
+
+    public static function getByEmail($email): ?array{
+        $userBean =  R::findOne(self::TABLE_NAME, 'email = ?', [$email] );
+        return $userBean?->export();
     }
 
 }

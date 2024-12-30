@@ -1,7 +1,8 @@
 <?php
 namespace Src\Exceptions;
-use Exception;
-class InvalidValidationException extends Exception
+use InvalidArgumentException;
+
+class InvalidValidationException extends InvalidArgumentException
 {
    protected $message =  'Invalid Data';
 }

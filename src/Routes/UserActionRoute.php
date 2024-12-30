@@ -16,6 +16,7 @@ enum UserActionRoute: string
     case RETRIEVE_ALL = 'retrieveAll';
     case REMOVE = 'remove';
     case UPDATE = 'update';
+    case LOGIN = 'login';
 
     //this getResponse methods interact with the User class based on the action value passed as query params
     public function getResponse(): string
@@ -32,6 +33,7 @@ enum UserActionRoute: string
 
         try {
             $expectedHttpMethod = match($this){
+                self::LOGIN => CustomHttp::POST_METHOD,
                 self::CREATE => CustomHttp::POST_METHOD,
                 self::RETRIEVE_ALL => CustomHttp::GET_METHOD,
                 self::RETRIEVE => CustomHttp::GET_METHOD,
@@ -41,7 +43,7 @@ enum UserActionRoute: string
 
 
             if(!CustomHttp::httpMethodValidator($expectedHttpMethod)){
-                throw new NotFoundException('Http Method is incorrect. Request Not found');
+                throw new NotFoundException('Http Method is incorrect.');
               }
  
             
@@ -53,6 +55,7 @@ enum UserActionRoute: string
                 self::RETRIEVE_ALL => $user->retrieveAll(),
                 self::RETRIEVE => $user->retrieve($userUuid),
                 self::UPDATE => $user->update($payload),
+                self::LOGIN => $user->login($payload),
                // self::REMOVE => $user->remove($userId),
 
                //logic for post method
