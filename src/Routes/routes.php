@@ -5,14 +5,7 @@ use Src\Exceptions\InvalidCredentialException;
 require_once __DIR__  .'/'. '../Helpers/misc.inc.php';
 
 $resource = $_REQUEST['resource'] ?? null;
-// $action = $_REQUEST['action'] ?? null;
 
-// if (!$action) {
-//     // Action is missing, handle the error here
-//     echo "From Routes" . PHP_EOL;
-//     require_once 'route-not-found.php';  
-//     exit;  
-// }
 try {
     switch ($resource) {
         case 'user':

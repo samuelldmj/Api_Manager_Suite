@@ -48,6 +48,7 @@ final class UserDal
     public static function getAllRec()
     {
         $userBean = R::findAll(self::TABLE_NAME);
+        if(!$userBean) return [];
         return $userBean;
     }
 
@@ -101,9 +102,10 @@ final class UserDal
         return R::findOne(self::TABLE_NAME, 'email = ?', [$email] ) !== null;
     }
 
-    public static function getByEmail($email): ?array{
-        $userBean =  R::findOne(self::TABLE_NAME, 'email = ?', [$email] );
-        return $userBean?->export();
+    //you can also return record as object instead of array
+    public static function getByEmail($email): ?object{
+       return R::findOne(self::TABLE_NAME, 'email = ?', [$email] );
+        
     }
 
 }

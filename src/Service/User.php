@@ -17,7 +17,7 @@ use Src\Exceptions\InvalidCredentialException;
 
 class User
 {
-  public function login(mixed $payload)
+  public function login(mixed $payload): ?array
   {
     $userValidation = new UserValidation($payload);
     if ($userValidation->isLoginSchemaValid()) {
@@ -25,16 +25,16 @@ class User
       if (UserDal::doesEmailExist($payload->email))
        {
         $user = UserDal::getByEmail($payload->email);
-        if (password_verify($payload->password, $user['password'])) 
+        if (password_verify($payload->password, $user->password)) 
         {
-          $userFullName = "{$user['first_name']} {$user['last_name']}";
+          $userFullName = "{$user->first_name} {$user->last_name}";
           $iss = $_ENV['APP_URL'];
           $iat = time();
           $nbf = $iat + 10;
-          $exp = $iat + 60 * 60;
+          $exp = $iat + $_ENV['JWT_EXPIRATION_TIME'];
           $aud = 'myusers';
           $user_arr_data = [
-            'email' => $user['email'],
+            'email' => $user->email,
             'name' => $userFullName
           ];
           $payload_info = [
@@ -50,8 +50,8 @@ class User
           $jwtToken = JWT::encode($payload_info, $secretKey, $algEncrypt);
 
           return [
+            'message' => sprintf('%s successfully logged in', $userFullName),
             'token' => $jwtToken,
-            'message' => sprintf('%s successfully logged in', $userFullName)
           ];
 
         }
@@ -117,8 +117,6 @@ class User
 
   public function retrieve(string $userUuid): array
   {
-
-
     if (v::uuid(version: 4)->validate($userUuid)) {
       $userData = UserDal::getById($userUuid);
       //removing user id and uuid from the display field.

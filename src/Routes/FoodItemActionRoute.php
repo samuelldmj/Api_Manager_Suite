@@ -37,7 +37,7 @@ enum FoodItemActionRoute: string
             //self points to the enums foodItemActionRoute then get map to the appropriate method in the foodItem class.
             //for example if the  action = retrieve; $this will be foodItemActionRoute::RETRIEVE
             $response = match ($this) {
-                self::CREATE => $foodItem->create($payload),
+                // self::CREATE => $foodItem->create($payload),
                 self::RETRIEVE_ALL => $foodItem->retrieveAll(),
                 self::RETRIEVE => $foodItem->retrieve($foodItemId),
             };
