@@ -92,10 +92,10 @@ class foodItem {
           $itemEntity = new ItemEntity();
 
           $itemUuid = Uuid::uuid4()->toString();
-          $itemEntity->setItemName('Bread and Beans');
-          $itemEntity->setItemPrice(100.99);
-          $itemEntity->setItemUuid($itemUuid);
-          $itemEntity->setItemAvailabilty(true);
+          $itemEntity->setItemName('Bread and Beans')
+          ->setItemPrice(100.99)
+          ->setItemUuid($itemUuid)
+          ->setItemAvailabilty(true);
   
           FoodDal::createDefaultItem($itemEntity);
         }

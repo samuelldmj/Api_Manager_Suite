@@ -17,6 +17,12 @@ use Src\Exceptions\InvalidCredentialException;
 
 class User
 {
+
+  public function __construct(protected string $jwtSecretKey){
+
+  }
+
+
   public function login(mixed $payload): ?array
   {
     $userValidation = new UserValidation($payload);
@@ -45,9 +51,8 @@ class User
             'aud' => $aud,
             'data' => $user_arr_data
           ];
-          $secretKey = $_ENV['JWT_KEY'];
           $algEncrypt = $_ENV['JWT_ALGORITHM_ENCRYPTION'];
-          $jwtToken = JWT::encode($payload_info, $secretKey, $algEncrypt);
+          $jwtToken = JWT::encode($payload_info, $this->jwtSecretKey, $algEncrypt);
 
           return [
             'message' => sprintf('%s successfully logged in', $userFullName),
@@ -185,7 +190,7 @@ class User
       return [];
     }
 
-    Http::setHeadersByCode(StatusCode::OK); // Correct response header
+    Http::setHeadersByCode(StatusCode::OK);
     return $payload; // Return updated payload
   }
 

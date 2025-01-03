@@ -8,6 +8,7 @@ use Src\Exceptions\EmailExistException;
 use Src\Service\User;
 use Src\Exceptions\InvalidValidationException;
 use Src\Exceptions\NotFoundException;
+use Src\Service\SecretKey;
 
 enum UserActionRoute: string
 {
@@ -25,8 +26,9 @@ enum UserActionRoute: string
         $data = file_get_contents("php://input");
         $payload = json_decode($data);
 
-        // Initialize a User instance fom the business logic.
-        $user = new User();
+        // Initialize a User instance and generate secretkey to login and for the business logic.
+        $secretKey = SecretKey::getJwtSecretKey();
+        $user = new User($secretKey);
         
         // Set userUuid from the query parameter in the url if available
         $userUuid = $_REQUEST['id'] ?? null;

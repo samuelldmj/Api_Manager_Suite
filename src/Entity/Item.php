@@ -12,40 +12,45 @@ class Item implements Entitiable {
     private bool $itemAvailabilty;
 
 
-    public function setSequentialId(int $itemId){
+    public function setSequentialId(int $itemId): self{
         $this->sequentialId = $itemId;
+        return $this;
     }
 
     public function getSequentialId(): int{
         return $this->sequentialId;
     }
 
-    public function setItemUuid(string $uuid): void{
+    public function setItemUuid(string $uuid): self{
          $this->itemUuid = $uuid;
+         return $this;
     }
 
     public function getItemUuid(): ?string{
         return $this->itemUuid;
     }
 
-    public function setItemPrice(float $price): void{
+    public function setItemPrice(float $price): self{
             $this->itemPrice = $price;
+            return $this;
     }
 
     public function getItemPrice(): float{
        return $this->itemPrice;
 }
 
-public function setItemName(string $name): void{
+public function setItemName(string $name): self{
     $this->itemName = $name;
+    return $this;
 }
 
 public function getItemName(): string{
     return $this->itemName;
 }
 
-public function setItemAvailabilty(bool $available): void{
+public function setItemAvailabilty(bool $available): self{
     $this->itemAvailabilty = $available;
+    return $this;
 }
 
 public function getItemAvailabilty(): bool{
