@@ -108,4 +108,11 @@ final class UserDal
         
     }
 
+    public static function setUserJwtToken(string $jwtToken, string $userUuid): void{
+      $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid] );
+      $userBean->session_token = $jwtToken;
+      $userBean->last_session_time = time();
+      R::store($userBean);
+    }
+
 }

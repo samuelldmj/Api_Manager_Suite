@@ -51,9 +51,11 @@ class User
             'aud' => $aud,
             'data' => $user_arr_data
           ];
+          
           $algEncrypt = $_ENV['JWT_ALGORITHM_ENCRYPTION'];
           $jwtToken = JWT::encode($payload_info, $this->jwtSecretKey, $algEncrypt);
-
+          UserDal::setUserJwtToken($jwtToken, $user->user_uuid);
+          
           return [
             'message' => sprintf('%s successfully logged in', $userFullName),
             'token' => $jwtToken,
