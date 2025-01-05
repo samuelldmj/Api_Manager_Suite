@@ -89,17 +89,20 @@ class User
         ->setCreatedDate(date('Y-m-d H:i:s'));
 
       if (UserDal::doesEmailExist($userEntity->getEmail())) {
-        throw new EmailExistException();
+        throw new EmailExistException("This email {$userEntity->getEmail()} address already exists");
       }
 
       //from DAL file.
-      if (UserDal::create(userEntity: $userEntity) === false) {
+      if (!$userUuid = UserDal::create(userEntity: $userEntity)) {
         //when an entry into the database fails
-        Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+        Http::setHeadersByCode(StatusCode::BAD_REQUEST);
         $payload = [];
       }
 
       Http::getStatusCode(StatusCode::CREATED);
+      // return array_merge((array) $payload, ["user_uuid" => $userUuid]);
+      //or
+      $payload->userUuid = $userUuid;
       return $payload;
     }
     throw new InvalidValidationException();
@@ -160,9 +163,9 @@ class User
   {
 
     $userValidation = new UserValidation($payload);
-
+    
     // Validating schema
-    if (!$userValidation->isCreationSchemaValid()) {
+    if (!$userValidation->isUpdateSchemaValid()) {
       throw new InvalidValidationException();
     }
 
@@ -188,12 +191,12 @@ class User
 
     // Update in the database
     if (UserDal::update($userUuid, $userEntity) === false) {
-      Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+      Http::setHeadersByCode(StatusCode::NOT_FOUND);
       return [];
     }
 
     Http::setHeadersByCode(StatusCode::OK);
-    return $payload; // Return updated payload
+    return $payload; 
   }
 
 }
