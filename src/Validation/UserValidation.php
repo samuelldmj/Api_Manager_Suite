@@ -1,7 +1,7 @@
 <?php
 namespace Src\Validation;
 use Respect\Validation\Validator as v;
-use Src\Exceptions\InvalidValidationException;
+
 
 class UserValidation
 {
@@ -24,7 +24,6 @@ class UserValidation
       ->attribute('phoneNumber', v::phone(), mandatory: false);
 
     return $schemaValidator->validate($this->data);
-
 
   }
 

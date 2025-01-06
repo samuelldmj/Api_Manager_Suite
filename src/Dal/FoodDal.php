@@ -12,7 +12,7 @@ final class FoodDal {
 
     //redbean would make a table, if it doesn't exist
     //using underscore to create a table via red bean is invalid 
-    public const TABLE_NAME = 'fooditems';
+    public const TABLE_NAME = 'items';
 
     // public static function create(foodItem $foodEntity): bool|int|string
     // {

@@ -6,8 +6,8 @@ use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Src\Exceptions\EmailExistException;
 use Src\Service\User;
-use Src\Exceptions\InvalidValidationException;
 use Src\Exceptions\NotFoundException;
+use Src\Exceptions\TokenSessionNotSetException;
 use Src\Service\SecretKey;
 
 enum UserActionRoute: string
@@ -63,13 +63,20 @@ enum UserActionRoute: string
                //logic for post method
                 self::REMOVE => $user->remove($payload)
             };
-        } catch (InvalidValidationException | EmailExistException $e) {
+        } catch(TokenSessionNotSetException $e){
+            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+            $response = [
+              'errors' => [
+                    'message' => $e->getMessage(),
+                ]
+              ];
+
+        } catch ( EmailExistException $e) {
             // Handle errors and set HTTP status to BAD_REQUEST
             Http::setHeadersByCode(StatusCode::BAD_REQUEST);
             $response = [
                 'errors' => [
                     'message' => $e->getMessage(),
-                    'code' => $e->getCode()
                 ]
             ];
         }

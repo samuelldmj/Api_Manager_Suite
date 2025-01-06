@@ -14,6 +14,7 @@ use Src\Dal\UserDal;
 use Src\Entity\User as UserEntity;
 use Src\Exceptions\EmailExistException;
 use Src\Exceptions\InvalidCredentialException;
+use Src\Exceptions\TokenSessionNotSetException;
 
 class User
 {
@@ -54,7 +55,13 @@ class User
           
           $algEncrypt = $_ENV['JWT_ALGORITHM_ENCRYPTION'];
           $jwtToken = JWT::encode($payload_info, $this->jwtSecretKey, $algEncrypt);
-          UserDal::setUserJwtToken($jwtToken, $user->user_uuid);
+
+          try {
+            UserDal::setUserJwtToken($jwtToken, $user->user_uuid);
+          } catch (TokenSessionNotSetException $e) {
+            throw new TokenSessionNotSetException();
+          }
+        
           
           return [
             'message' => sprintf('%s successfully logged in', $userFullName),
