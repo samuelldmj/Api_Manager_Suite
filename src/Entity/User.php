@@ -5,6 +5,7 @@ namespace Src\Entity;
 
 class User {
 
+    private int $sequentialId;
     private string $userUuid;
     private ?string $firstName = null;
     private ?string $lastName = null;
@@ -15,6 +16,15 @@ class User {
     private string $password;
 
     private $dateTime;
+    public function setUserSequentialId(int $id): self{
+        $this->sequentialId = $id;
+        return $this;
+    }
+
+    public function getUserSequentialId(): int{
+        return $this->sequentialId;
+    }
+
 
     public function setUserUuid(string $userId): self{
         $this->userUuid = $userId;
