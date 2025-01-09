@@ -30,7 +30,7 @@ public function testItemPrice(){
 }
 
 public function testItemAvailabilty(){
-    $expectedResult = (bool) "true";
+    $expectedResult = true;
     $this->itemEntity->setItemAvailabilty($expectedResult);
     $this->assertSame($expectedResult, $this->itemEntity->getItemAvailabilty());
 }

@@ -21,8 +21,8 @@ final class UserTest extends TestCase
     public function testSequentialId(): void
     {
     $expectedId = 55;
-        $this->userEntity->setUserSequentialId($$expectedId);
-        $this->assertSame($$expectedId, $this->userEntity->getUserSequentialId());
+        $this->userEntity->setUserSequentialId($expectedId);
+        $this->assertSame($expectedId, $this->userEntity->getUserSequentialId());
     }
 
     public function testUuid():void {
