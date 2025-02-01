@@ -17,7 +17,7 @@ class FoodValidation
 
       $schemaValidator =  v::attribute('foodName', v::stringType()
       ->length(self::MINIMUM_NAME_LENGTH, self::MAXIMUM_NAME_LENGTH))
-      ->attribute('foodPrice', v::intType())
+      ->attribute('foodPrice', v::floatType())
       ->attribute('foodAvailability', v::boolType());
       return $schemaValidator->validate($this->data);
     }
