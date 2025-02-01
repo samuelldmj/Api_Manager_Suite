@@ -2,63 +2,46 @@
 
 namespace Src\Entity;
 
-class foodItem {
-    private string $foodUuid;
+class FoodItem extends Item {
+    // Additional FoodItem-specific properties
+    private ?string $expiryDate = null;
+    private ?int $calories = null;
 
-    private string $foodName;
+    // Setter for expiry date
+    public function setExpiryDate(string $expiryDate): self {
+        $this->expiryDate = $expiryDate;
+        return $this;
+    }
 
-    private int $foodPrice;
+    // Getter for expiry date
+    public function getExpiryDate(): ?string {
+        return $this->expiryDate;
+    }
 
-    private bool $foodAvailabilty;
+    // Setter for calories
+    public function setCalories(int $calories): self {
+        $this->calories = $calories;
+        return $this;
+    }
 
-    private $dateTime;
+    // Getter for calories
+    public function getCalories(): ?int {
+        return $this->calories;
+    }
 
+    // Override the `unserialize` method if needed
+    public function unserialize(?array $data): self {
+        parent::unserialize($data); // Call the parent unserialize method
 
-public function setFoodUuid(string $foodId): self{
-    $this->foodUuid = $foodId;
-    return $this;
-}
+        // Handle FoodItem-specific data
+        if (!empty($data['expiry_date'])) {
+            $this->setExpiryDate($data['expiry_date']);
+        }
 
+        if (!empty($data['calories'])) {
+            $this->setCalories($data['calories']);
+        }
 
-public function getFoodUuid(){
-    return $this->foodUuid;
-}
-
-
-public function setFoodName( string $foodName): self{
-    $this->foodName = $foodName;
-    return $this;
-}
-
-public function getFoodName(){
-    return $this->foodName;
-}
-
-public function setFoodPrice( string|int $foodPrice): self{
-    $this->foodPrice = $foodPrice;
-    return $this;
-}
-
-public function getFoodPrice(){
-    return $this->foodPrice;
-}
-
-public function setFoodAvailability( bool $foodAvailability): self{
-    $this->foodAvailabilty = $foodAvailability;
-    return $this;
-}
-
-public function getFoodAvailability(){
-    return $this->foodAvailabilty;
-}
-
-
-public function setCreatedDate(string $date ): self{
-    $this->dateTime = $date;
-    return $this;
-}
-
-public function getCreatedDate(): string{
-    return $this->dateTime;
-}
+        return $this;
+    }
 }
