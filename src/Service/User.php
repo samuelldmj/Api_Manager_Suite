@@ -120,7 +120,7 @@ class User
   public function retrieveAll(): array
   {
 
-    $allRec = UserDal::getAllRec();
+    $allRec = UserDal::getAllUserRec();
     // foreach($allRec as $k){
     //   unset($k['id']);
     // }
@@ -135,7 +135,7 @@ class User
   public function retrieve(string $userUuid): array
   {
     if (v::uuid(version: 4)->validate($userUuid)) {
-      $userData = UserDal::getById($userUuid);
+      $userData = UserDal::getUserById($userUuid);
       //removing user id and uuid from the display field.
       unset($userData['id']);
       return $userData;
@@ -144,7 +144,7 @@ class User
   }
 
 
-  //deleting the user from the db using url: delete method
+  //deleting the user from the db using id in the url: delete method
 //     public function remove(string $userId): bool
 // {
 //     if (!v::uuid(version: 4)->validate($userId)) {
@@ -162,7 +162,7 @@ class User
 
     $userValidation = new UserValidation($payload);
     if ($userValidation->isDeleteUser()) {
-      return UserDal::deleteRec($payload->userUuid);
+      return UserDal::deleteUserRec($payload->userUuid);
     }
   }
 

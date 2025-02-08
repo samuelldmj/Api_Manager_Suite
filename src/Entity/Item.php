@@ -7,8 +7,13 @@ class Item implements Entitiable {
     private ?string $itemUuid = null;
     private float $itemPrice = 0.0;
     private bool $itemAvailabilty = false; 
-    private string $dateTime = ''; 
+    private string $dateTime =  "";
 
+    private string $updateDate;
+
+    public function __construct() {
+        $this->updateDate = date('Y-m-d H:i:s');
+    }
 
     public function setSequentialId(int $itemId): self{
         $this->sequentialId = $itemId;
@@ -62,6 +67,16 @@ public function setCreatedDate(string $date ): self{
 
 public function getCreatedDate(): string{
     return $this->dateTime;
+}
+
+
+public function setUpdatedDate(string $update ): self{
+    $this->updateDate = $update;
+    return $this;
+}
+
+public function getUpdatedDate(): string{
+    return $this->updateDate;
 }
 
 public function unserialize(?array $data):self {

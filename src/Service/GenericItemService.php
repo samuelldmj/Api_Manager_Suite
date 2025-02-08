@@ -24,4 +24,9 @@ class GenericItemService implements ItemServiceInterface
     {
         throw new \Exception('Update operation not supported for this item type.');
     }
+
+    public function remove(string $id): array
+    {
+        throw new \Exception('Delete operation not supported for this item type.');
+    }
 }

@@ -56,7 +56,7 @@ final class UserDal
      * @param string $userUuid The UUID of the user to retrieve.
      * @return array|null The user record as an associative array or null if not found.
      */
-    public static function getById(string $userUuid): ?array
+    public static function getUserById(string $userUuid): ?array
     {
         // Find the user record where "user_uuid" matches the provided UUID
         $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);
@@ -69,7 +69,7 @@ final class UserDal
      *
      * @return array The list of user records or an empty array if none are found.
      */
-    public static function getAllRec()
+    public static function getAllUserRec()
     {
         // Retrieve all records from the "users" table
         $userBean = R::findAll(self::TABLE_NAME);
@@ -83,7 +83,7 @@ final class UserDal
      * @param string $userUuid The UUID of the user to delete.
      * @return bool True if the deletion was successful, false otherwise.
      */
-    public static function deleteRec(string $userUuid): bool
+    public static function deleteUserRec(string $userUuid): bool
     {
         // Find the user record by its UUID
         $userBean = R::findOne(self::TABLE_NAME, 'user_uuid = ?', [$userUuid]);

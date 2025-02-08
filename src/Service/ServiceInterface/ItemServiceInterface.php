@@ -8,4 +8,6 @@ interface ItemServiceInterface
     public function retrieve(string $id): array;
     public function retrieveAll(): array;
     public function update(string $id, object $payload): object|array;
+
+    public function remove(string $id);
 }

@@ -11,6 +11,8 @@ enum ItemActionRoute: string
     case CREATE = 'create';
     case UPDATE = 'update';
 
+    case DELETE = 'delete';
+
     public function getResponse(string $type): string
     {
         $data = file_get_contents("php://input");
@@ -29,6 +31,7 @@ enum ItemActionRoute: string
             self::RETRIEVE => $itemService->retrieve($itemId),
             self::RETRIEVE_ALL => $itemService->retrieveAll(),
             self::UPDATE => $itemService->update($itemId, $payload),
+            self::DELETE => $itemService->remove($itemId)
         };
 
         return json_encode($response);

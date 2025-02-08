@@ -1,6 +1,7 @@
 <?php
 namespace Src\Dal;
 
+use PH7\PhpHttpResponseHeader\Http;
 use Ramsey\Uuid\Uuid;
 use RedBeanPHP\Facade as R;
 use RedBeanPHP\RedException\SQL;
@@ -13,28 +14,35 @@ final class FoodDal {
     //redbean would make a table, if it doesn't exist
     //using underscore to create a table via red bean is invalid 
     public const TABLE_NAME = 'items';
-    public static function createFood(foodItem $foodEntity): bool|int|string {
+    public static function createFood(foodItem $foodEntity): bool|int|string
+    {
         $itemBean = R::dispense(self::TABLE_NAME);
-    
         $itemBean->item_uuid = $foodEntity->getItemUuid();
         $itemBean->item_name = $foodEntity->getItemName();
         $itemBean->item_price_in_naira = $foodEntity->getItemPrice();
         $itemBean->item_availabilty = $foodEntity->getItemAvailabilty();
         $itemBean->create_date = $foodEntity->getCreatedDate();
-        $itemBean->category = 'food'; 
-        $itemBean->updated_at = date('Y-m-d H:i:s'); 
+        $itemBean->category = 'foodstuffs';
+        $itemBean->updated_at = date('Y-m-d H:i:s');
     
         try {
             if (!R::testConnection()) {
-                die('Unable to connect to the database.');
+                throw new \Exception('Unable to connect to the database.');
             }
-            return R::store($itemBean);
-        } catch (SQL $e) {
-            return false;
-        } finally {
-            R::close();
+    
+            R::begin(); // Start transaction
+            $insertedId = R::store($itemBean);
+            R::commit(); // Commit if successful
+            return $insertedId;
+    
+        } catch (\Exception $e) { // Catch both SQL and general exceptions
+            R::rollback(); // Rollback if there is an error
+            error_log("Database Error: " . $e->getMessage()); // Log error
+            return false; 
         }
     }
+    
+
      
 
 
@@ -109,27 +117,34 @@ final class FoodDal {
     public static function updateFoodById(string $itemUuid, foodItem $foodEntity) {
         $itemBean = R::findOne(self::TABLE_NAME, 'item_uuid = ?', [$itemUuid]);
     
-        if ($itemBean) {
-            $itemName = $foodEntity->getItemName();
-            $itemPrice = $foodEntity->getItemPrice();
-            $itemAvailability = $foodEntity->getItemAvailabilty();
-    
-            if ($itemName) $itemBean->item_name = $itemName;
-            if ($itemPrice) $itemBean->item_price_in_naira = $itemPrice;
-            if ($itemAvailability) $itemBean->item_availabilty = $itemAvailability;
-    
-            // Automatically set updated_at to the current time
-            $itemBean->updated_at = date('Y-m-d H:i:s');
+        if (!$itemBean) {
+            return false; // Item not found, return early
         }
+    
+        // Update only if values exist in the payload
+        if (!empty($foodEntity->getItemName())) {
+            $itemBean->item_name = $foodEntity->getItemName();
+        }
+    
+        if (!empty($foodEntity->getItemPrice())) {
+            $itemBean->item_price_in_naira = $foodEntity->getItemPrice();
+        }
+    
+        if (!empty($foodEntity->getItemAvailabilty())) {
+            $itemBean->item_availabilty = $foodEntity->getItemAvailabilty();
+        }
+    
+        // Automatically set updated_at to the current time
+        $itemBean->updated_at = $foodEntity->getUpdatedDate();
     
         try {
             return R::store($itemBean);
-        } catch (SQL $e) {
+        } catch (\Exception $e) {
+            error_log("Update error: " . $e->getMessage()); // Log the error
             return false;
-        } finally {
-            R::close();
         }
     }
+    
     
 
     public static function getItemsByCategory(string $category): array {
@@ -154,4 +169,10 @@ final class FoodDal {
     }
     
 
+    public static function deleteFooditem(string $itemUuid){
+        // Find the food record by its UUID
+        $itemBean = R::findOne(self::TABLE_NAME, 'item_uuid = ?', [$itemUuid]);
+        // Delete the record if it exists and return the result
+        return $itemBean !== null && (bool) R::trash($itemBean);
+    }
 }
