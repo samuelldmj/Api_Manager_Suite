@@ -5,5 +5,5 @@ use RuntimeException;
 
 class InvalidCredentialException extends RuntimeException {
 
-    protected $message = 'Invalid Login Credentials';
+    protected $message = 'Invalid email or password.';
 }

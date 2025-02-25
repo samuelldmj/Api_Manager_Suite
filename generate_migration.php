@@ -1,4 +1,6 @@
 <?php
+//generate databse schema to be migrated.
+//This file will provide a template or schema for table creation.
 
 // Ensure script is run from CLI
 if (php_sapi_name() !== 'cli') {

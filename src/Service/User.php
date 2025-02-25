@@ -10,11 +10,13 @@ use Ramsey\Uuid\Uuid;
 use Src\Validation\UserValidation;
 use Src\Exceptions\InvalidValidationException;
 use Respect\Validation\Validator as v;
-use Src\Dal\UserDal;
-use Src\Entity\User as UserEntity;
+
 use Src\Exceptions\EmailExistException;
 use Src\Exceptions\InvalidCredentialException;
 use Src\Exceptions\TokenSessionNotSetException;
+use Src\Model\User as ModelUser;
+
+use function Symfony\Component\Clock\now;
 
 class User
 {
@@ -23,58 +25,69 @@ class User
 
   }
 
-
+  //Todo problem with login
+  //todo check readme Txt file for more info
   public function login(mixed $payload): ?array
   {
-    $userValidation = new UserValidation($payload);
-    if ($userValidation->isLoginSchemaValid()) {
-
-      if (UserDal::doesEmailExist($payload->email))
-       {
-        $user = UserDal::getByEmail($payload->email);
-        if (password_verify($payload->password, $user->password)) 
-        {
-          $userFullName = "{$user->first_name} {$user->last_name}";
-          $iss = $_ENV['APP_URL'];
-          $iat = time();
-          $nbf = $iat + 10;
-          $exp = $iat + $_ENV['JWT_EXPIRATION_TIME'];
-          $aud = 'myusers';
-          $user_arr_data = [
-            'email' => $user->email,
-            'name' => $userFullName
-          ];
-          $payload_info = [
-            'iss' => $iss,
-            'iat' => $iat,
-            'nbf' => $nbf,
-            'exp' => $exp,
-            'aud' => $aud,
-            'data' => $user_arr_data
-          ];
-          
-          $algEncrypt = $_ENV['JWT_ALGORITHM_ENCRYPTION'];
-          $jwtToken = JWT::encode($payload_info, $this->jwtSecretKey, $algEncrypt);
-
-          try {
-            UserDal::setUserJwtToken($jwtToken, $user->user_uuid);
-          } catch (TokenSessionNotSetException $e) {
-            throw new TokenSessionNotSetException();
-          }
-        
-          
-          return [
-            'message' => sprintf('%s successfully logged in', $userFullName),
-            'token' => $jwtToken,
-          ];
-
-        }
-        throw new InvalidCredentialException();
+      $userValidation = new UserValidation($payload);
+      
+      // Validate the login schema
+      if (!$userValidation->isLoginSchemaValid()) {
+          throw new InvalidCredentialException();
       }
-      throw new InvalidValidationException();
-    }
-
+  
+      // Find the user by email
+      $userEmail = ModelUser::where('email', $payload->email)->first();
+      if (!$userEmail) {
+          throw new InvalidValidationException("User not found.");
+      }
+  
+      // Verify the password
+      if (!password_verify($payload->password, $userEmail->password)) {
+          throw new InvalidCredentialException();
+      }
+  
+      // Generate JWT token
+      $userFullName = "{$userEmail->first_name} {$userEmail->last_name}";
+      $iss = $_ENV['APP_URL'];
+      $iat = time();
+      $nbf = $iat + 10;
+      $exp = $iat + $_ENV['JWT_EXPIRATION_TIME'];
+      $aud = 'myusers';
+      $user_arr_data = [
+          'email' => $userEmail->email,
+          'name' => $userFullName
+      ];
+      $payload_info = [
+          'iss' => $iss,
+          'iat' => $iat,
+          'nbf' => $nbf,
+          'exp' => $exp,
+          'aud' => $aud,
+          'data' => $user_arr_data
+      ];
+      
+      $algEncrypt = $_ENV['JWT_ALGORITHM_ENCRYPTION'];
+      $jwtToken = JWT::encode($payload_info, $this->jwtSecretKey, $algEncrypt);
+  
+      try {
+          // Update the session token and last session time using Eloquent
+          $userEmail->update([
+              'session_token' => $jwtToken,
+              'last_session_time' => time()
+          ]);
+      } catch (\Exception $e) {
+          var_dump("Failed to update session token: " . $e->getMessage());
+          throw new TokenSessionNotSetException();
+      }
+  
+      // Return the success response
+      return [
+          'message' => sprintf('%s successfully logged in', $userFullName),
+          'token' => $jwtToken,
+      ];
   }
+
 
   public function create(mixed $payload): object|array
   {
@@ -86,30 +99,30 @@ class User
       //assigns uuid to user when a data input is created.
       $userId = Uuid::uuid4()->toString();
 
-      $userEntity = new UserEntity;
-      $userEntity->setUserUuid($userId)
-        ->setFirstName($payload->first)
-        ->setLastName($payload->last)
-        ->setEmail($payload->email)
-        ->setPassword(password_hash($payload->password, PASSWORD_ARGON2I))
-        ->setPhoneNumber(phone: $payload->phoneNumber)
-        ->setCreatedDate(date('Y-m-d H:i:s'));
+      $userEmail = ModelUser::where('email', $payload->email)->first();
 
-      if (UserDal::doesEmailExist($userEntity->getEmail())) {
-        throw new EmailExistException("This email {$userEntity->getEmail()} address already exists");
+      if ($userEmail?->email) {
+        throw new EmailExistException("This email {$userEmail->email} address already exists");
       }
 
-      //from DAL file.
-      if (!$userUuid = UserDal::create(userEntity: $userEntity)) {
+      $createUser = ModelUser::create([
+        'user_uuid' => $userId,
+        'first_name' => $payload->first,
+        'last_name' => $payload->last,
+        'email' => $payload->email,
+        'phone' => $payload->phoneNumber,
+        'created_at' => now(),
+        'password' => password_hash($payload->password, PASSWORD_ARGON2I),
+      ]);
+
+      if (!$createUser) {
         //when an entry into the database fails
         Http::setHeadersByCode(StatusCode::BAD_REQUEST);
         $payload = [];
       }
 
-      Http::getStatusCode(StatusCode::CREATED);
-      // return array_merge((array) $payload, ["user_uuid" => $userUuid]);
-      //or
-      $payload->userUuid = $userUuid;
+      Http::getStatusCode(StatusCode::CREATED);     
+      $payload->userUuid = $userId;
       return $payload;
     }
     throw new InvalidValidationException();
@@ -120,90 +133,51 @@ class User
   public function retrieveAll(): array
   {
 
-    $allRec = UserDal::getAllUserRec();
-    // foreach($allRec as $k){
-    //   unset($k['id']);
-    // }
-
-    $hidingUserId = array_map(function (object $k) {
-      unset($k['id']);
-      return $k;
-    }, $allRec);
-    return $hidingUserId;
+  return ModelUser::all()->toArray();
   }
 
   public function retrieve(string $userUuid): array
   {
     if (v::uuid(version: 4)->validate($userUuid)) {
-      $userData = UserDal::getUserById($userUuid);
-      //removing user id and uuid from the display field.
-      unset($userData['id']);
+      $userData = ModelUser::where('item_uuid', $userUuid)->first();
       return $userData;
     }
     throw new InvalidValidationException('invalid UUID');
   }
 
 
-  //deleting the user from the db using id in the url: delete method
-//     public function remove(string $userId): bool
-// {
-//     if (!v::uuid(version: 4)->validate($userId)) {
-//         throw new InvalidValidationException('Invalid UUID');
-//     }
-
-  //     return UserDal::deleteUser($userId);
-// }
-
-
-  // ALTERNATIVELY //deleting the user from the db using url: post method on the body of the page
+//deleting the user from the db using url: post method on the body of the page
 //incorrect payload will give a null response.
   public function remove(mixed $payload)
   {
 
     $userValidation = new UserValidation($payload);
     if ($userValidation->isDeleteUser()) {
-      return UserDal::deleteUserRec($payload->userUuid);
+
+     return  ModelUser::where('user_uuid', $payload->userUuid)->delete();
+      
     }
   }
 
-  public function update(mixed $payload): object|array
+
+  public function update(mixed $payload): array
   {
+      $userValidation = new UserValidation($payload);
+      if (!$userValidation->isUpdateSchemaValid()) {
+          throw new InvalidValidationException();
+      }
 
-    $userValidation = new UserValidation($payload);
-    
-    // Validating schema
-    if (!$userValidation->isUpdateSchemaValid()) {
-      throw new InvalidValidationException();
-    }
+      $user = ModelUser::where('user_uuid', $payload->userUuid)->firstOrFail();
 
-    $userUuid = $payload->userUuid;
-    $userEntity = new UserEntity();
+      $user->update(array_filter([
+          'first_name' => $payload->first ?? null,
+          'last_name' => $payload->last ?? null,
+          'email' => $payload->email ?? null,
+          'phone' => $payload->phoneNumber ?? null,
+          'updated_at' => now(),
+      ]));
 
-    // Setting my user entity properties
-    if (!empty($payload->first)) {
-      $userEntity->setFirstName($payload->first);
-    }
-
-    if (!empty($payload->last)) {
-      $userEntity->setLastName($payload->last);
-    }
-
-    if (!empty($payload->email)) {
-      $userEntity->setEmail($payload->email);
-    }
-
-    if (!empty($payload->phoneNumber)) {
-      $userEntity->setPhoneNumber($payload->phoneNumber);
-    }
-
-    // Update in the database
-    if (UserDal::update($userUuid, $userEntity) === false) {
-      Http::setHeadersByCode(StatusCode::NOT_FOUND);
-      return [];
-    }
-
-    Http::setHeadersByCode(StatusCode::OK);
-    return $payload; 
+      return $user->toArray();
   }
 
 }

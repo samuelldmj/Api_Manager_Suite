@@ -1,15 +1,15 @@
 <?php
+
 namespace Src\Service;
-use Src\Entity\Item as ItemEntity;
-use Src\Exceptions\InvalidValidationException;
-use Src\Dal\FoodDal;
-use Respect\Validation\Validator as v;
-use PH7\JustHttp\StatusCode;
-use PH7\PhpHttpResponseHeader\Http;
+
 use Ramsey\Uuid\Uuid;
-use Src\Entity\foodItem as FoodEntity;
-use Src\Service\ServiceInterface\ItemServiceInterface;
+use PH7\JustHttp\StatusCode;
 use Src\Validation\foodValidation;
+use PH7\PhpHttpResponseHeader\Http;
+use Respect\Validation\Validator as v;
+use Src\Models\FoodItem as ModelsFoodItem;
+use Src\Exceptions\InvalidValidationException;
+use Src\Service\ServiceInterface\ItemServiceInterface;
 
 class foodItem implements ItemServiceInterface
 {
@@ -24,34 +24,20 @@ class foodItem implements ItemServiceInterface
       // Assigns UUID to food when a data input is created
       $foodId = Uuid::uuid4();
 
-      $foodEntity = new FoodEntity();
-      $foodEntity
-        ->setItemUuid($foodId)
-        ->setItemName($payload->foodName)
-        ->setItemPrice($payload->foodPrice)
-        ->setItemAvailabilty($payload->foodAvailability)
-        ->setCreatedDate(date('Y-m-d H:i:s'));
+      // Create the food item using Eloquent
+      $foodItem = ModelsFoodItem::create([
+        'item_uuid' => $foodId,
+        'item_name' => $payload->foodName,
+        'item_price_in_naira' => $payload->foodPrice,
+        'item_availabilty' => $payload->foodAvailability,
+        'create_date' => ModelsFoodItem::now(),
+      ]);
 
-      // From DAL file
-      $statusCode = StatusCode::CREATED; // 201
-      Http::setHeadersByCode($statusCode);
-
-      // Simulate getting status after client validation
-      $clientStatusCode = $statusCode;
-
-      if ($clientStatusCode !== StatusCode::OK) {
-        FoodDal::createFood(foodEntity: $foodEntity);
-      } else {
-        return [
-          'status' => 'error',
-          'message' => 'Invalid status code. Data not inserted.'
-        ];
-      }
-      
       Http::getStatusCode(StatusCode::CREATED);
-
-      // Convert $payload to an array before returning it
-      return (array) $payload;
+      return [
+        'status' => 'success',
+        'data' => $foodItem,
+      ];
     }
 
     throw new InvalidValidationException();
@@ -63,20 +49,10 @@ class foodItem implements ItemServiceInterface
   {
     // Validate the UUID format (version 4)
     if (v::uuid(version: 4)->validate($itemUuid)) {
-      if ($itemData = FoodDal::getFoodById($itemUuid)) {
-        if ($itemData->getItemUuid()) {
-          return [
-            'itemUuid' => $itemData->getItemUuid(),
-            'itemName' => $itemData->getItemName(),
-            'price' => $itemData->getItemPrice(),
-            'availabilty' => $itemData->getItemAvailabilty(),
-            'createdDate' => $itemData->getCreatedDate()
-          ];
-        }
-      }
 
+      $itemData = ModelsFoodItem::where('item_uuid', $itemUuid)->first();
+      return $itemData;
     }
-
 
     // If no item data is found, return an empty array
     return [];
@@ -86,100 +62,49 @@ class foodItem implements ItemServiceInterface
 
   public function retrieveAll(): array
   {
-    $allFoodItem = FoodDal::getAllFoods();
-    // foreach($allItems as $i){
-    //   unset($i['id']);
-    // }
-
-    $hidingfoodId = array_map(function (object $k) {
-      unset($k['id']);
-      return $k;
-    }, $allFoodItem);
-    return $hidingfoodId;
+    return  ModelsFoodItem::all()->toArray();
   }
 
 
-
-  //retrieving all when createDefault method is set in the fooddal file
-//     public function retrieveAll():array{
-//         $allFoodItem  = FoodDal::getAllFoods();
-
-  //         if(count($allFoodItem) === 0){
-//           $itemEntity = new ItemEntity();
-
-  //           $itemUuid = Uuid::uuid4()->toString();
-//           $itemEntity->setItemName('Bread and Beans')
-//           ->setItemPrice(100.99)
-//           ->setItemUuid($itemUuid)
-//           ->setItemAvailabilty(true);
-
-  //           FoodDal::createDefaultItem($itemEntity);
-//         }
-
-  //         return $allFoodItem;
-
-  // }
-
   public function update(string $id, object $payload): array
-{
+  {
     // Validate the payload using a validation class
     $userValidation = new foodValidation($payload);
 
-    $id = $payload->itemUUid; 
+    $id = $payload->itemUUid;
     if (!v::uuid(version: 4)->validate($id)) {
-        throw new InvalidValidationException('Invalid UUID');
+      throw new InvalidValidationException('Invalid UUID');
     }
 
     if (!$userValidation->isUpdateSchemaValid()) {
-        throw new InvalidValidationException('Invalid data schema for update.');
+      throw new InvalidValidationException('Invalid data schema for update.');
     }
 
-    // Initialize the food entity
-    $foodEntity = new FoodEntity();
+    $foodItem = ModelsFoodItem::where('item_uuid', $id)->first();
 
-    // Set properties of the food entity based on the payload
-    if (!empty($payload->foodName)) {
-        $foodEntity->setItemName($payload->foodName);
+    if (!$foodItem) {
+      return [];
     }
 
-    if (!empty($payload->foodPrice)) {
-        $foodEntity->setItemPrice($payload->foodPrice);
-    }
+    // Update only provided fields
+    $foodItem->update(array_filter([
+      'item_name' => $payload->foodName ?? null,
+      'item_price_in_naira' => $payload->foodPrice ?? null,
+      'item_availabilty' => $payload->foodAvailability ?? null,
+      'updated_at' => ModelsFoodItem::now(),
+    ]));
 
-    if (!empty($payload->foodAvailability)) {
-        $foodEntity->setItemAvailabilty($payload->foodAvailability);
-    }
-
-    // Call the DAL to update the food item using the provided ID
-    $updateResult = FoodDal::updateFoodById($id, $foodEntity);
-
-    if ($updateResult === false) {
-        Http::setHeadersByCode(StatusCode::NOT_FOUND);
-        return [
-            'status' => 'error',
-            'message' => 'Food item not found or update failed.',
-            'data' => ['id' => $id, 'provided_payload' => $payload]
-        ];
-    }
-
-    // If successful, return the updated payload with a success message
-    Http::setHeadersByCode(StatusCode::OK);
-    return [
-        'status' => 'success',
-        'message' => 'Food item updated successfully.',
-        'data' => $payload
-    ];
-}
-
-
-  public function remove(string $id){
-      if(!v::uuid(version: 4)->validate($id)){
-        throw new InvalidValidationException('Invalid UUID');
-      }
-
-       FoodDal::deleteFoodItem($id);
-       return "deleted";
+    return $foodItem;
   }
 
 
+  public function remove(string $id)
+  {
+    if (!v::uuid(version: 4)->validate($id)) {
+      throw new InvalidValidationException('Invalid UUID');
+    }
+
+    ModelsFoodItem::where('item_uuid', $id)->delete();
+    return "deleted";
+  }
 }

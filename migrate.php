@@ -1,4 +1,5 @@
 <?php
+// this file will push the database schema to the database 
 
 use Src\Migrations\BaseMigration;
 

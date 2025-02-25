@@ -18,7 +18,7 @@ class CreateUsersTable extends BaseMigration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('password');
-            $table->string('session_token')->nullable();
+            $table->string('session_token', 800)->nullable();
             $table->timestamp('last_session_time')->nullable();
             $table->timestamps();
         });

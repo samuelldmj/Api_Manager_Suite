@@ -1,21 +1,35 @@
 <?php
 
-use RedBeanPHP\Facade as R;
+use Dotenv\Dotenv;
+use Illuminate\Database\Capsule\Manager as Capsule;
 use Src\Config\Environment;
 
-$dsn = sprintf('mysql:host=%s;dbname=%s', $_ENV['DB_HOST'], $_ENV['DB_NAME']);
-R::setup($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS']); //for both mysql or mariaDB
+// Load .env file
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+$dotenv->load();
 
+$database = new Capsule;
+
+$database->addConnection([
+    'driver'    => 'mysql',
+    'host'      => $_ENV['DB_HOST'],
+    'database'  => $_ENV['DB_NAME'],
+    'username'  => $_ENV['DB_USER'],
+    'password'  => $_ENV['DB_PASS'],
+    'charset'   => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix'    => '',
+]);
+
+// Make this Capsule instance available globally
+$database->setAsGlobal();
+
+// Boot Eloquent
+$database->bootEloquent();
+
+// Check if the environment is production, then disable migrations
 $currentEnvironment = Environment::tryFrom($_ENV['ENVIRONMENT']);
 
-//testing what environment variable is passed.
-// var_dump($currentEnvironment->value);
-
-//if this is on production, our database structure will be on frozen state.
-//added null safe to handle null value. tryform() method will return null if the environment is not correctly specified.
 if ($currentEnvironment?->environmentName() === Environment::PRODUCTION->value) {
-    R::freeze(true); // Freeze in production only
-} else {
-    R::freeze(false); // Allow table creation in development
+    Capsule::connection()->disableQueryLog(); // Disable query logging for production
 }
-
